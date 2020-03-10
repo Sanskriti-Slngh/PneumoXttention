@@ -1,0 +1,78 @@
+import os
+import tensorflow as tf
+import keras
+import pickle
+
+# import models
+import models.m12_model as m12
+
+# user options
+model_name = 'm12'
+use_adam = False
+lr = 0.01
+decay_rate = 0.9
+decay_epochs = 10
+momentum = 0.9
+batch_size = 128
+epochs = 300
+
+train_data = '../data/train_data_256'
+val_data = '../data/val_data_256'
+
+# define history class
+class LossHistory(keras.callbacks.Callback):
+    def __init__(self):
+        self.train_losses = []
+        self.val_losses = []
+        self.train_acc = []
+        self.val_acc = []
+        super(LossHistory, self).__init__()
+
+    def on_epoch_end(self, epoch, logs={}):
+        self.train_losses.append(logs.get('loss'))
+        self.train_acc.append(logs.get('acc'))
+        self.val_losses.append(logs.get('val_loss'))
+        self.val_acc.append(logs.get('val_acc'))
+
+        if epoch%10 == 0 and epoch:
+            # Save model
+            model.save('../experiments/current/m_' + str(epoch))
+
+# learning rate scheduler
+def lr_scheduler(epoch, lr):
+    global decay_rate, decay_epochs
+    if epoch%decay_epochs == 0 and epoch:
+        return lr * decay_rate
+    return lr
+
+history = LossHistory()
+
+# instantiate model
+params = {'resetHistory': False,
+          'models_dir': '../experiments/m12_sgd_bs128',
+          'print_summary': True}
+
+if model_name == 'm12':
+    model = m12.Model(history, params={'dropout': 0.5})
+
+## get the data
+with open(train_data, 'rb') as fin:
+    x_train, y_train = pickle.load(fin)
+
+with open(val_data, 'rb') as fin:
+    x_val, y_val = pickle.load(fin)
+
+## training
+if use_adam:
+    optimizer = keras.optimizers.Adam(lr=lr)
+else:
+    optimizer = keras.optimizers.SGD(lr=lr, momentum=momentum)
+
+model.compile(optimizer)
+model.train(x_train, y_train, x_val, y_val, batch_size, epochs, lr_scheduler)
+
+## save the model
+model.save()
+
+# plot the results
+model.train_plot()
