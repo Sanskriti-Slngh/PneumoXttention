@@ -29,7 +29,7 @@ import gc
 import re
 
 # user options
-model_name = 'm15h'
+model_name = 'm13'
 use_adam = True
 learning_rates = [0.00001]
 decay_rate = 0
@@ -58,8 +58,8 @@ x1024 = False
 x512 = False
 x256 = True
 add_nih = False
-use_heatmap = True
-reshape_h_data = True
+use_heatmap = False
+reshape_h_data = False
 train_with_mask_aug = False
 plot_options = {'fp':False, 'roc_curve':False}
 
@@ -68,14 +68,14 @@ params['resetHistory']  = False
 params['print_summary'] = True
 params['channels_1x1'] = 1
 params['add_class_weight'] = False
-params['use_heat_map'] = True
+params['use_heat_map'] = False
 params['random_256_generation'] = False
 params['split_random_sample'] = False
-params['force_normalize'] = False
+params['force_normalize'] = True
 params['dropout'] = 0.5
 #params['models_dir'] = 'C:/Users/Manish/projects/tiya/scienceFair-2020/experiments/256x256/random_256x256_generator'
-params['models_dir'] = '../experiments/256x256/m15h_additive_loss'
-#params['models_dir'] = 'F:/2020_science_fair_current_exp/channels_1x1/16/0.0001/128/m14_d50'
+#params['models_dir'] = '../experiments/256x256/m13h'
+params['models_dir'] = 'F:/2020_science_fair_current_exp/channels_1x1/16/0.001/128/m13_d50'
 
 # data files
 # 0 - train data
@@ -85,31 +85,23 @@ if enable_vgg_224:
     data_files = ('../data/binaryclass/224/train_data.dat',
                   '../data/binaryclass/224/val_data_noaug.dat',
                   None)
-    box_files = (None, None, None)
     heatmap_files = (None, None, None)
 elif binary and x1024:
     data_files = ('../data/binaryclass/1024x1024/train_data.dat',
                   '../data/binaryclass/1024x1024/rsna_val_no_hv.dat',
                   None)
-    box_files = ('../data/binaryclass/1024x1024/box_data/rsna_train_box.dat',
-                 '../data/binaryclass/1024x1024/box_data/rsna_val_box_no_hv.dat',
-                None)
     heatmap_files = (None, None, None)
 elif binary and x512:
     data_files = ('../data/binaryclass/512x512/rsna_train.dat',
                   '../data/binaryclass/512x512/rsna_val_no_hv.dat',
                   '../data/binaryclass/512x512/rsna_test.dat')
-    box_files = ('../data/binaryclass/512x512/box_data/rsna_train_box.dat',
-                 '../data/binaryclass/512x512/box_data/rsna_val_box_no_hv.dat',
-                 '../data/binaryclass/512x512/box_data/rsna_test_box.dat')
     heatmap_files = ('../data/binaryclass/512x512/rsna_train_heatmap.dat.bz2',
                      '../data/binaryclass/512x512/rsna_val_no_hv_heatmap.dat.bz2',
                      '../data/binaryclass/512x512/rsna_test_heatmap.dat.bz2')
 elif binary and x256:
-    data_files = ('../data/binaryclass/train_data_256',
-                  '../data/binaryclass/val_data_256_no_hv',
-                  '../data/binaryclass/test_data_256')
-    box_files = (None, None, None)
+    data_files = ('../data/binaryclass/256/train_data.dat.bz2',
+                  '../data/binaryclass/256/val_data.dat.bz2',
+                  '../data/binaryclass/256/test_data.dat.bz2')
     if use_heatmap:
         heatmap_files = ('../data/binaryclass/512x512/rsna_train_heatmap.dat.bz2',
                          '../data/binaryclass/512x512/rsna_val_no_hv_heatmap.dat.bz2',
@@ -120,13 +112,11 @@ elif multi_classification and data_aug and not x1024:
     data_files = ('../data/multiclass/256x256/rsna_train_multiclassification.dat',
                   '../data/multiclass/256x256/rsna_val_multiclassification.dat',
                   None)
-    box_files = (None, None, None)
     heatmap_files = (None, None, None)
 elif not data_aug and not multi_classification and not x1024:
     data_files = ('../data/binaryclass/train_data_256_no_hv',
                   '../data/binaryclass/val_data_256_no_hv',
                   None)
-    box_files = (None, None, None)
     heatmap_files = (None, None, None)
 else:
     print('WRONG')
@@ -137,7 +127,9 @@ def load_data_from_file(fname, dname):
         fin = bz2.BZ2File(fname, 'rb')
         try:
             print("Reading data from file %s" % (fname))
-            if len(dname) > 1:
+            if len(dname) == 4:
+                data0, data1, data2, data3 = pickle.load(fin)
+            elif len(dname) > 1:
                 data0, data1 = pickle.load(fin)
             else:
                 data = pickle.load(fin)
@@ -146,11 +138,19 @@ def load_data_from_file(fname, dname):
     else:
         print("Reading data from file %s" % (fname))
         with open(fname, 'rb') as fin:
-            if len(dname) > 1:
+            if len(dname) == 4:
+                data0, data1, data2, data3 = pickle.load(fin)
+            elif len(dname) > 1:
                 data0, data1  = pickle.load(fin)
             else:
                 data = pickle.load(fin)
-    if (len(dname)) > 1:
+    if len(dname) == 4:
+        print("%s shape: %s" % (dname[0], data0.shape))
+        print("%s shape: %s" % (dname[1], data1.shape))
+        print("%s shape: %s" % (dname[2], data2.shape))
+        print("%s shape: %s" % (dname[3], data3.shape))
+        return data0, data1, data2, data3
+    elif (len(dname)) > 1:
         print ("%s shape: %s" %(dname[0], data0.shape))
         print("%s shape: %s" %(dname[1], data1.shape))
         return data0, data1
@@ -184,21 +184,11 @@ for i,fname in enumerate(data_files):
     if not fname:
         continue
     if i == 0:
-        x_train, y_train = load_data_from_file(fname, ("x_train", "y_train"))
+        x_train, y_train, b_train, p_train = load_data_from_file(fname, ("x_train", "y_train", "b_train", "p_train"))
     if i == 1:
-        x_val, y_val = load_data_from_file(fname, ("x_val", "y_val"))
+        x_val, y_val, b_val, p_val = load_data_from_file(fname, ("x_val", "y_val", "b_val", "p_val"))
     if i == 2:
-        x_test, y_test = load_data_from_file(fname, ("x_test", "y_test"))
-
-for i, fname in enumerate(box_files):
-    if not fname:
-        continue
-    if i == 0:
-        b_train = load_data_from_file(fname, ("b_train",))
-    if i == 1:
-        b_val = load_data_from_file(fname, ("b_val",))
-    if i == 2:
-        b_test = load_data_from_file(fname, ("b_test",))
+        x_test, y_test, b_test, p_test = load_data_from_file(fname, ("x_test", "y_test", "b_test", "p_test"))
 
 for i, fname in enumerate(heatmap_files):
     if not fname:
@@ -415,7 +405,6 @@ for batch_size in batch_sizes:
             print (model.x_train.dtype)
             print (model.x_val.dtype)
             print (model.x_test.dtype)
-            exit()
 
             # instantiate model
             if not predict:
@@ -460,6 +449,7 @@ for batch_size in batch_sizes:
                     dump_heatmap = False
 
                 model.prediction(1, plot_options)
+                model.gen_fifty(data_files[2], 16)
                 if dump_heatmap:
                     fout = bz2.BZ2File(fname, 'wb')
                     try:
@@ -470,8 +460,10 @@ for batch_size in batch_sizes:
                     finally:
                         fout.close()
             elif predict:
-                model.gen_fifty()
-#                model.prediction(batch_size, plot_options)
+                print('here')
+#                model.gen_fifty(data_file=data_files[2], batch_size=4)
+#                model.visualize_cnn(data_file=data_files[2])
+                model.prediction(batch_size, plot_options)
 
 if not predict:
     plt.legend()
