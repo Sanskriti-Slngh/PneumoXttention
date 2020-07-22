@@ -52,11 +52,11 @@ x_train_data = np.array(x_train_data)
 x_train_data = np.reshape(x_train_data, (x_train_data.shape[0], 256, 256, 1))
 y_train_data = np.array(y_train_data)
 
-#with open(data_out, 'wb') as fout:
-  #  pickle.dump((x_train_data, y_train_data), fout, protocol=4)
+with open(data_out, 'wb') as fout:
+    pickle.dump((x_train_data, y_train_data), fout, protocol=4)
 
-#with open(data_out_val, 'wb') as fout:
- #   pickle.dump((x_val_data, y_val_data), fout, protocol= 4)
+with open(data_out_val, 'wb') as fout:
+   pickle.dump((x_val_data, y_val_data), fout, protocol= 4)
 
 with open(data_out_box, 'wb') as fout:
     pickle.dump(box_val_data, fout, protocol= 4)
