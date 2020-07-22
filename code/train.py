@@ -206,67 +206,6 @@ for i, fname in enumerate(heatmap_files):
         if reshape_h_data:
             h_test = np.reshape(h_test, (h_test.shape[0],17,17,1))
 
-# if Multi classification, overwrite y values
-if multi_classification:
-    diseases = {"Normal":0,"No Lung Opacity / Not Normal":1, "Lung Opacity":2}
-    with open("../data/multiclass/256x256/train_classes_data_256", 'rb') as fin:
-        yyy, ids = pickle.load(fin)
-    y_train = [diseases[x[0]] for x in yyy]
-    with open("../data/multiclass/256x256/val_classes_data_256", 'rb') as fin:
-        yyy, ids = pickle.load(fin)
-    y_val = [diseases[x[0]] for x in yyy]
-
-    print("Converting to category:Start")
-    y_train_labels = y_train
-    y_train = to_categorical(y_train, num_classes=3)
-    y_val = to_categorical(y_val, num_classes=3)
-    print("Converting to category:Done")
-
-    # Shuffle data
-    indices = np.arange(x_train.shape[0])
-    np.random.shuffle(indices)
-    x_train = x_train[indices]
-    y_train = y_train[indices]
-
-    indices = np.arange(x_val.shape[0])
-    np.random.shuffle(indices)
-    x_val = x_val[indices]
-    y_val = y_val[indices]
-    y_train_labels = y_train_labels[indices].tolist()
-
-    print("x_train shape = %s, y_train shape = %s" % (x_train.shape, y_train.shape))
-
-# dd nih data
-if add_nih:
-    nihd = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/all_nih_diseases/'
-    diseases = ("Pleural_Thickening","Pneumothorax","Consolidation","Nodule","No Finding","Effusion","Cardiomegaly","Mass","Pneumonia","Atelectasis","Emphysema","Infiltration","Hernia","Fibrosis","Edema")
-    d2idex = {}
-    for i, disease in enumerate(diseases):
-        d2idex[disease] = i
-    x = []
-    for i, disease in enumerate(diseases):
-        print ("Reading nih data %s" %(disease))
-        with open(nihd + disease + ".data", 'rb') as fin:
-            x_tmp = pickle.load(fin)
-            print (x_tmp.shape)
-            if disease == "Pneumonia" or disease == 'Pneumothorax':
-                if not multi_classification:
-                    y_tmp = [1]*x_tmp.shape[0]
-                else:
-                    y_tmp = [2]*x_tmp.shape[0]
-            elif disease == 'No Finding':
-                y_tmp = [0]*x_tmp.shape[0]
-            else:
-                if not multi_classification:
-                    y_tmp = [0] * x_tmp.shape[0]
-                else:
-                    y_tmp = [1] * x_tmp.shape[0]
-
-            x.append(x_tmp)
-            y_train.extend(y_tmp)
-
-    x_train = np.concatenate((x_train, x[0],x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11],x[12],x[13],x[14]))
-
 print("x_train shape = %s, y_train shape = %s" %(x_train.shape, y_train.shape))
 print("class 0 images count = %d" %(np.sum(y_train == 0)))
 print("class 1 images count = %d" %(np.sum(y_train == 1)))
@@ -455,14 +394,10 @@ for batch_size in batch_sizes:
                     try:
                         print('Dumping prediction in %s' % (fname))
                         pickle.dump(model.y_pred, fout, protocol=4)
-#                        for i in range(model.y_test.shape[0]):
-#                            print(model.y_test[i], model.y_hat[i], model.y_pred[i])
                     finally:
                         fout.close()
             elif predict:
                 print('here')
-#                model.gen_fifty(data_file=data_files[2], batch_size=4)
-#                model.visualize_cnn(data_file=data_files[2])
                 model.prediction(batch_size, plot_options)
 
 if not predict:
