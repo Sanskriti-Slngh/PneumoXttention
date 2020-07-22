@@ -5,7 +5,7 @@ import numpy as np
 
 random.seed(1234567)
 
-data_in = "C:/Users/Manish/projects/tiya/scienceFair-2019.junk/data/rsna_train_data_with_256.dat"
+data_in = "C:/Users/projects/tiya/scienceFair-2019.junk/data/rsna_train_data_with_256.dat"
 data_out = "../data/train_data_256_no_hv"
 data_out_val = "../data/val_data_256_no_hv"
 data_out_box = "../data/box_data_256_no_hv"
