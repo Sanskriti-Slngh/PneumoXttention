@@ -12,29 +12,29 @@ resolution = 1024 #(224|1024|256)
 num_classes = 3 # (1|3)
 # getting and saving the data
 if resolution == 1024:
-    data_in = "C:/Users/Manish/projects/tiya/scienceFair-2020/data/multiclass/1024x1024/rsna_train_pf.dat"
-    data_out = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/rsna_train.dat'
-    data_out_box_train = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/box_data/rsna_train_box.dat'
+    data_in = "C:/Users/projects/tiya/scienceFair-2020/data/multiclass/1024x1024/rsna_train_pf.dat"
+    data_out = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/rsna_train.dat'
+    data_out_box_train = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/box_data/rsna_train_box.dat'
     if augmentation:
-        data_out_val = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/rsna_val.dat'
-        data_out_box_val = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/box_data/rsna_val_box.dat'
+        data_out_val = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/rsna_val.dat'
+        data_out_box_val = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/box_data/rsna_val_box.dat'
     else:
-        data_out_val = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/rsna_val_no_hv.dat'
-        data_out_box_val = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/box_data/rsna_val_box_no_hv.dat'
+        data_out_val = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/rsna_val_no_hv.dat'
+        data_out_box_val = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/1024x1024/box_data/rsna_val_box_no_hv.dat'
 elif resolution == 512:
-    data_in = "C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/512/train_data_pf.dat"
-    data_out = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/512x512/rsna_train.dat'
-    data_out_box_train = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/512x512/box_data/rsna_train_box.dat'
+    data_in = "C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/512/train_data_pf.dat"
+    data_out = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/512x512/rsna_train.dat'
+    data_out_box_train = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/512x512/box_data/rsna_train_box.dat'
     if augmentation:
-        data_out_val = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/512x512/rsna_val.dat'
-        data_out_box_val = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/512x512/box_data/rsna_val_box.dat'
+        data_out_val = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/512x512/rsna_val.dat'
+        data_out_box_val = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/512x512/box_data/rsna_val_box.dat'
     else:
-        data_out_val = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/512x512/rsna_val_no_hv.dat'
-        data_out_box_val = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/512x512/box_data/rsna_val_box_no_hv.dat'
+        data_out_val = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/512x512/rsna_val_no_hv.dat'
+        data_out_box_val = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/512x512/box_data/rsna_val_box_no_hv.dat'
 elif resolution == 224:
-    data_in = "C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/224/train_data_pf.dat"
-    data_out = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/224/train_data_noaug.dat'
-    data_out_val = 'C:/Users/Manish/projects/tiya/scienceFair-2020/data/binaryclass/224/val_data_noaug.dat'
+    data_in = "C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/224/train_data_pf.dat"
+    data_out = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/224/train_data_noaug.dat'
+    data_out_val = 'C:/Users/projects/tiya/scienceFair-2020/data/binaryclass/224/val_data_noaug.dat'
 else:
     print ("ERROR")
     exit()
@@ -166,8 +166,6 @@ def sizeof(obj):
     if isinstance(obj, (list, tuple, set, frozenset)): return size + sum(map(sizeof, obj))
     return size
 
-#for i in range(y_val_data.shape[0]):
-#    print ("%s %s" %(y_val_data[i], box_val_data[i]))
 print (x_train_data.shape)
 print (sizeof(x_train_data[:,:,:,:]))
 print (x_train_data.astype)
@@ -186,6 +184,6 @@ with open(data_out_val, 'wb') as fout:
     print("Dumping %s" % (data_out_val))
     pickle.dump((x_val_data, y_val_data), fout, protocol=4)
 
-#with open(data_out_box_val, 'wb') as fout:
- #   print("Dumping %s" % (data_out_box_val))
-  #  pickle.dump(box_val_data, fout, protocol=4)
+with open(data_out_box_val, 'wb') as fout:
+    print("Dumping %s" % (data_out_box_val))
+    pickle.dump(box_val_data, fout, protocol=4)
