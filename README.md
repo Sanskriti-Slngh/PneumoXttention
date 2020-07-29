@@ -17,11 +17,13 @@ A Convolutional Neural Network compensating for Human Fallibility when Detecting
     
     
 > ## Step 3
->  Run **"-----"** *twice* to generate train, val, and test numpy arrays for sizes 512, 256 and save the data into files for future use. 
+>  Run **"data_prep.py"** *twice* to generate train, val, and test numpy arrays for sizes 512, 256 and save the data into files for future use. 
 >
 > Change the name of directories in needed areas and the following variables.
 
     resolution = 512/256      # run program twice with both these values
+    data_in = ("train_data_file", "test_data_file")
+    data_out_dir = "dir_you_want_to_save_file_in"
 
 > ## Step 4
 > Run **"train.py"** three times to create heatmaps for the train, validation, and test set. 
@@ -40,5 +42,16 @@ A Convolutional Neural Network compensating for Human Fallibility when Detecting
 
 > ## Step 5
 > Run **"train.py"** (original file) to reproduce final results. The output will be the F1 score, AUROC, recall, and precision.
+>
+> Change the following variables to the given values:
+
+    model_name = 'm13h'
+    generate_heatmap = ''
+    predict_on = 'test'
+    x512 = False
+    x256 = True
+    use_heatmap = True
+    params['use_heatmap'] = True
+    params['generate_heatmap'] = False
 
 ## For any questions or concerns with the code or procedure please email *sanskritisingh0914@gmail.com* with these questions
