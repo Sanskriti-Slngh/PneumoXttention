@@ -24,7 +24,6 @@ momentum = 0.9
 batch_sizes = [16]
 epochs = 300
 plot_only = False
-channels_1x1 = [128]
 predict = True
 data_aug = True
 data_gen = False
@@ -33,20 +32,15 @@ normalize = False
 # set both to same
 generate_heatmap = '' ;# 'train', 'test', 'val'
 predict_on = 'test' ;# 'train', 'test, 'val'
-multi_classification = False
 binary = True
 x512 = False
 x256 = True
-add_nih = False
 use_heatmap = True
 reshape_h_data = False
-train_with_mask_aug = False
-plot_options = {'fp':False, 'roc_curve':False}
 
 params = {}
 params['resetHistory']  = False
 params['print_summary'] = True
-params['channels_1x1'] = 1
 params['add_class_weight'] = False
 params['use_heat_map'] = True
 params['generate_heatmap'] = False
@@ -68,11 +62,8 @@ if binary and x512:
                      data_dir + '/512/rsna_val_heatmap.dat.bz2',
                      data_dir + '/512/rsna_test_heatmap.dat.bz2')
 elif binary and x256:
-  #  data_files = (data_dir + '/256/train_data.dat.bz2',
-  #                data_dir + '/256/val_data.dat.bz2',
-  #                data_dir + '/256/test_data.dat.bz2')
-    data_files = (None,
-                  None,
+    data_files = (data_dir + '/256/train_data.dat.bz2',
+                  data_dir + '/256/val_data.dat.bz2',
                   data_dir + '/256/test_data.dat.bz2')
     if use_heatmap:
         heatmap_files = (data_dir + '/512/rsna_train_heatmap.dat.bz2',
@@ -168,11 +159,6 @@ for i, fname in enumerate(heatmap_files):
         if reshape_h_data:
             h_test = np.reshape(h_test, (h_test.shape[0],17,17,1))
 
-#print("x_train shape = %s, y_train shape = %s" %(x_train.shape, y_train.shape))
-#print("class 0 images count = %d" %(np.sum(y_train == 0)))
-#print("class 1 images count = %d" %(np.sum(y_train == 1)))
-#print("class 2 images count = %d" %(np.sum(y_train == 2)))
-
 # LossHistory Class
 class LossHistory(keras.callbacks.Callback):
     def __init__(self):
@@ -253,10 +239,6 @@ for batch_size in batch_sizes:
                 model.y_test = y_test
                 model.b_test = b_test
                 model.h_test = h_test
-
-#            print (model.x_train.dtype)
-#            print (model.x_val.dtype)
-#            print (model.x_test.dtype)
 
             # instantiate model
             if not predict:
