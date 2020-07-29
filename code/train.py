@@ -5,13 +5,13 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import bz2
+import gc
+import re
+import os
 
 # import models
 import models.m13.m13_model as m13
 import models.m13h.m13h_model as m13h
-import gc
-import re
-import os
 
 # user options
 data_dir = "C:/Users/Manish/projects/tiya/SF2020/data"
