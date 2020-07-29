@@ -7,29 +7,15 @@ import numpy as np
 import bz2
 
 # import models
-import models.m12.m12_model as m12
-import models.m12.m12_multiclass as m12_multiclass
 import models.m13.m13_model as m13
-import models.m14.m14_model as m14
-import models.m14.m14_multiclass as m14_multiclass
-import models.m14.m14_no_dropout as m14_no_d
-import models.m14.m14_attention as m14_attention
-import models.m14.m14_attention_class3 as m14_attention_multiclass
-import models.m15.m15_nih_ensemble as m15_nih_ensemble
-import models.m15.m15_model as m15
-import models.m15.m15_attention as m15_attention
-import models.m15.m15_2mod_attn as m15_2mod_attn
-import models.resnet.resnet50_model as resnet50
-import models.resnet.resnet_multiclass as resnet_multiclass
-import models.vgg16.pretrained_resnet50 as pre_resnet50
-import models.vgg16.pretrained_vgg16 as vgg16
 import models.m13h.m13h_model as m13h
-import models.m15h.m15h_model as m15h
 import gc
 import re
+import os
 
 # user options
-model_name = 'm13'
+data_dir = "C:/Users/Manish/projects/tiya/SF2020/data"
+model_name = 'm13h'
 use_adam = True
 learning_rates = [0.00001]
 decay_rate = 0
@@ -37,28 +23,22 @@ decay_epochs = 50
 momentum = 0.9
 batch_sizes = [16]
 epochs = 300
-minimize_false_negative = False
 plot_only = False
 channels_1x1 = [128]
 predict = True
 data_aug = True
 data_gen = False
-if model_name == 'vgg16':
-    enable_vgg_224 = True
-else:
-    enable_vgg_224 = False
 
 normalize = False
 # set both to same
-generate_heatmap = 'train' ;# 'train', 'test', 'val'
+generate_heatmap = '' ;# 'train', 'test', 'val'
 predict_on = 'test' ;# 'train', 'test, 'val'
 multi_classification = False
 binary = True
-x1024 = False
 x512 = False
 x256 = True
 add_nih = False
-use_heatmap = False
+use_heatmap = True
 reshape_h_data = False
 train_with_mask_aug = False
 plot_options = {'fp':False, 'roc_curve':False}
@@ -68,56 +48,38 @@ params['resetHistory']  = False
 params['print_summary'] = True
 params['channels_1x1'] = 1
 params['add_class_weight'] = False
-params['use_heat_map'] = False
-params['random_256_generation'] = False
+params['use_heat_map'] = True
+params['generate_heatmap'] = False
 params['split_random_sample'] = False
 params['force_normalize'] = True
 params['dropout'] = 0.5
-#params['models_dir'] = 'C:/Users/Manish/projects/tiya/scienceFair-2020/experiments/256x256/random_256x256_generator'
-#params['models_dir'] = '../experiments/256x256/m13h'
-params['models_dir'] = 'F:/2020_science_fair_current_exp/channels_1x1/16/0.001/128/m13_d50'
+params['models_dir'] = 'C:/Users/Manish/projects/tiya/SF2020/models/m13h'
 
 # data files
 # 0 - train data
 # 1 - val data
 # 2 - test data
-if enable_vgg_224:
-    data_files = ('../data/binaryclass/224/train_data.dat',
-                  '../data/binaryclass/224/val_data_noaug.dat',
-                  None)
-    heatmap_files = (None, None, None)
-elif binary and x1024:
-    data_files = ('../data/binaryclass/1024x1024/train_data.dat',
-                  '../data/binaryclass/1024x1024/rsna_val_no_hv.dat',
-                  None)
-    heatmap_files = (None, None, None)
-elif binary and x512:
-    data_files = ('../data/binaryclass/512x512/rsna_train.dat',
-                  '../data/binaryclass/512x512/rsna_val_no_hv.dat',
-                  '../data/binaryclass/512x512/rsna_test.dat')
-    heatmap_files = ('../data/binaryclass/512x512/rsna_train_heatmap.dat.bz2',
-                     '../data/binaryclass/512x512/rsna_val_no_hv_heatmap.dat.bz2',
-                     '../data/binaryclass/512x512/rsna_test_heatmap.dat.bz2')
+
+if binary and x512:
+    data_files = (data_dir + '/512/train_data.dat.bz2',
+                  data_dir + '/512/val_data.dat.bz2',
+                  data_dir + '/512/test_data.dat.bz2')
+    heatmap_files = (data_dir + '/512/rsna_train_heatmap.dat.bz2',
+                     data_dir + '/512/rsna_val_heatmap.dat.bz2',
+                     data_dir + '/512/rsna_test_heatmap.dat.bz2')
 elif binary and x256:
-    data_files = ('../data/binaryclass/256/train_data.dat.bz2',
-                  '../data/binaryclass/256/val_data.dat.bz2',
-                  '../data/binaryclass/256/test_data.dat.bz2')
+  #  data_files = (data_dir + '/256/train_data.dat.bz2',
+  #                data_dir + '/256/val_data.dat.bz2',
+  #                data_dir + '/256/test_data.dat.bz2')
+    data_files = (None,
+                  None,
+                  data_dir + '/256/test_data.dat.bz2')
     if use_heatmap:
-        heatmap_files = ('../data/binaryclass/512x512/rsna_train_heatmap.dat.bz2',
-                         '../data/binaryclass/512x512/rsna_val_no_hv_heatmap.dat.bz2',
-                         '../data/binaryclass/512x512/rsna_test_heatmap.dat.bz2')
+        heatmap_files = (data_dir + '/512/rsna_train_heatmap.dat.bz2',
+                         data_dir + '/512/rsna_val_heatmap.dat.bz2',
+                         data_dir + '/512/rsna_test_heatmap.dat.bz2')
     else:
         heatmap_files = (None, None, None)
-elif multi_classification and data_aug and not x1024:
-    data_files = ('../data/multiclass/256x256/rsna_train_multiclassification.dat',
-                  '../data/multiclass/256x256/rsna_val_multiclassification.dat',
-                  None)
-    heatmap_files = (None, None, None)
-elif not data_aug and not multi_classification and not x1024:
-    data_files = ('../data/binaryclass/train_data_256_no_hv',
-                  '../data/binaryclass/val_data_256_no_hv',
-                  None)
-    heatmap_files = (None, None, None)
 else:
     print('WRONG')
     exit()
@@ -191,7 +153,7 @@ for i,fname in enumerate(data_files):
         x_test, y_test, b_test, p_test = load_data_from_file(fname, ("x_test", "y_test", "b_test", "p_test"))
 
 for i, fname in enumerate(heatmap_files):
-    if not fname:
+    if not os.path.isfile(fname):
         continue
     if i == 0:
         h_train = load_data_from_file(fname, ("h_train",))
@@ -206,10 +168,10 @@ for i, fname in enumerate(heatmap_files):
         if reshape_h_data:
             h_test = np.reshape(h_test, (h_test.shape[0],17,17,1))
 
-print("x_train shape = %s, y_train shape = %s" %(x_train.shape, y_train.shape))
-print("class 0 images count = %d" %(np.sum(y_train == 0)))
-print("class 1 images count = %d" %(np.sum(y_train == 1)))
-print("class 2 images count = %d" %(np.sum(y_train == 2)))
+#print("x_train shape = %s, y_train shape = %s" %(x_train.shape, y_train.shape))
+#print("class 0 images count = %d" %(np.sum(y_train == 0)))
+#print("class 1 images count = %d" %(np.sum(y_train == 1)))
+#print("class 2 images count = %d" %(np.sum(y_train == 2)))
 
 # LossHistory Class
 class LossHistory(keras.callbacks.Callback):
@@ -229,8 +191,8 @@ class LossHistory(keras.callbacks.Callback):
         gc.collect()
         if epoch%5 == 0:
             # Save model
-            print ("Saving the model in ../experiments/current/m_" + str(epoch))
-            model.save('../experiments/current/m_' + str(epoch))
+            print ("Saving the model in ./experiments/current/m_" + str(epoch))
+            model.save('./experiments/current/m_' + str(epoch))
 
 # learning rate scheduler
 def lr_scheduler(epoch, lr):
@@ -245,60 +207,11 @@ for batch_size in batch_sizes:
         for channels in channels_1x1:
             history = LossHistory()
             params['channels_1x1'] = channels
-            if model_name == 'm12':
-                model = m12.Model(history, params)
-
-            elif model_name == 'm12_multiclass':
-                model = m12_multiclass .Model(history, params)
-
-            elif model_name == 'm13':
+            if model_name == 'm13':
                 model = m13.Model(history, params)
 
             elif model_name == 'm13h':
                 model = m13h.Model(history, params)
-
-            elif model_name == 'm14':
-                model = m14.Model(history, params)
-
-            elif model_name == 'm14_multiclass':
-                model = m14_multiclass.Model(history, params)
-
-            elif model_name == 'm14_no_d':
-                model = m14_no_d.Model(history, params)
-
-            elif model_name == 'm14_attention':
-                model = m14_attention.Model(history, params)
-
-            elif model_name == 'm14_attention_multiclass':
-                model = m14_attention_multiclass.Model(history, params)
-
-            elif model_name == 'm15':
-                model = m15.Model(history, params)
-
-            elif model_name == 'm15_attention':
-                model = m15_attention.Model(history, params)
-
-            elif model_name == 'm15_2mod_attn':
-                model = m15_2mod_attn.Model(history, params)
-
-            elif model_name == 'm15_nih_ensemble':
-                model = m15_nih_ensemble.Model(history, params)
-
-            elif model_name == 'm15h':
-                model = m15h.Model(history, params)
-
-            elif model_name == 'resnet50':
-                model = resnet50.Model(history, params)
-
-            elif model_name == 'resnet_multiclass':
-                model = resnet_multiclass.Model(history, params)
-
-            elif model_name == 'pre_resnet50':
-                model = pre_resnet50.Model(history, params)
-
-            elif model_name == 'vgg16':
-                model = vgg16.Model(history, params)
-
             else:
                 model = None
 
@@ -341,9 +254,9 @@ for batch_size in batch_sizes:
                 model.b_test = b_test
                 model.h_test = h_test
 
-            print (model.x_train.dtype)
-            print (model.x_val.dtype)
-            print (model.x_test.dtype)
+#            print (model.x_train.dtype)
+#            print (model.x_val.dtype)
+#            print (model.x_test.dtype)
 
             # instantiate model
             if not predict:
@@ -365,7 +278,7 @@ for batch_size in batch_sizes:
                     print('Generating heatmap for train data')
                     dump_heatmap = True
                     model.params['y_reshape_to_2d'] = True
-                    model.params['random_256_generation'] = True
+                    model.params['generate_heatmap'] = True
                     model.params['do_confusion_matrix'] = False
                     fname = heatmap_files[0]
                 elif generate_heatmap == 'val':
@@ -373,7 +286,7 @@ for batch_size in batch_sizes:
                     print('Generating heatmap for val data')
                     dump_heatmap = True
                     model.params['y_reshape_to_2d'] = True
-                    model.params['random_256_generation'] = True
+                    model.params['generate_heatmap'] = True
                     model.params['do_confusion_matrix'] = False
                     fname = heatmap_files[1]
                 elif generate_heatmap == 'test':
@@ -381,14 +294,14 @@ for batch_size in batch_sizes:
                     print('Generating heatmap for test data')
                     dump_heatmap = True
                     model.params['y_reshape_to_2d'] = True
-                    model.params['random_256_generation'] = True
+                    model.params['generate_heatmap'] = True
                     model.params['do_confusion_matrix'] = False
                     fname = heatmap_files[2]
                 else:
                     dump_heatmap = False
 
                 model.prediction(1, plot_options)
-                model.gen_fifty(data_files[2], 16)
+#                model.gen_fifty(data_files[2], 16)
                 if dump_heatmap:
                     fout = bz2.BZ2File(fname, 'wb')
                     try:

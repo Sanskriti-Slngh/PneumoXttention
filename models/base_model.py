@@ -51,7 +51,7 @@ class BaseModel:
         self.params['multi_classification'] = False
         self.params['data_generation_enable'] = False
         self.params['train_with_mask_aug'] = False
-        self.params['random_256_generation'] = False
+        self.params['generate_heatmap'] = False
         self.params['y_hat_threshold'] = 0.5
         self.params['y_reshape_to_2d'] = False
         self.params['do_confusion_matrix'] = True
@@ -92,6 +92,9 @@ class BaseModel:
         # Copy the train.py
         if self.is_train:
             shutil.copyfile('train.py', self.params['models_dir'] + '/train.py.copy')
+
+        print(self.name + '.h5py')
+        print (os.path.isfile(self.name + '.h5py'))
 
         # load model if model is already there
         if not self.params['resetHistory'] and os.path.isfile(self.name + '.h5py'):
@@ -310,7 +313,7 @@ class BaseModel:
         if (self.params['force_normalize']):
             print("WARNING: Force normalization is on")
 
-        if self.params['random_256_generation']:
+        if self.params['generate_heatmap']:
             self.y_all = [] # new target for all samples
             def createGenerator(X, I, Y):
                 while True:
@@ -357,19 +360,7 @@ class BaseModel:
                 return
             self.y = self.y_all[0:self.y_hat.shape[0]]
         else:
-            with open('C:/Users/Manish/projects/tiya/scienceFair-2020/reports/final_test_images', "rb") as fin:
-                self.x_test, self.y_test = pickle.load(fin)
-
-            with open('C:/Users/Manish/projects/tiya/scienceFair-2020/reports/heatmaps', 'rb') as fin:
-                self.h_test = pickle.load(fin)
-
-            self.h_test = np.array(self.h_test)
-            self.x_test = self.x_test[0:25, :, :, :]
-            self.y_test = self.y_test[0:25]
-            self.h_test = self.h_test[0:25, :, :]
-            # normalize if needed
             print(self.x_test.shape)
-            #print(self.x_test[0,0,0,0])
             if self.x_test.dtype == np.uint8 and self.params['force_normalize']:
                 print ("Normalizing x_test")
                 norm_const = np.array(255).astype('float16')
@@ -423,76 +414,3 @@ class BaseModel:
             plt.scatter(id, y_hat_for_plt)
             plt.show()
 
-    def gen_fifty(self, data_file, batch_size):
-        with open('C:/Users/Manish/projects/tiya/scienceFair-2020/data/multiclass/rsna_test.dat','rb') as fin:
-            self.x, self.y = pickle.load(fin)
-
-        print(self.y.shape)
-        print(self.y)
-        num_positive = 12
-        num_false_opac = 8
-        num_false = 5
-        positives = []
-        false_opacs = []
-        falses = []
-        y_values = []
-        go = True
-        while go == True:
-            index = random.randint(0, 4321)
-            #image = self.x[index, :, :, 0]
-            if num_positive == 0 and num_false_opac == 0 and num_false == 0:
-                go = False
-            if self.y[index][2] == 1 and num_positive != 0:
-                if index in positives:
-                    continue
-                positives.append(index)
-                num_positive = num_positive-1
-            elif self.y[index][0] == 1 and num_false_opac != 0:
-                if index in false_opacs:
-                    continue
-                false_opacs.append(index)
-                num_false_opac = num_false_opac-1
-            elif self.y[index][1] == 1 and num_false != 0:
-                if index in falses:
-                    continue
-                falses.append(index)
-                num_false = num_false-1
-            else:
-                continue
-
-        number = 1
-
-        positives.extend(false_opacs)
-        positives.extend(falses)
-        np.random.shuffle(positives)
-
-        images = []
-        box = []
-        heatmaps = []
-
-        with open('../data/binaryclass/box_data/box_data_256_test', 'rb') as fin:
-            self.boxes = pickle.load(fin)
-
-        for index in positives:
-            image = self.x[index, :, :, 0]
-            images.append(image)
-            heatmaps.append(self.h_test[index, :, :])
-            if self.y[index][2] == 1:
-                y_values.append(1)
-            else:
-                y_values.append(0)
-            box.append(self.boxes[index])
-            fig, ax = plt.subplots(1)
-            ax.imshow(image, cmap='gray')
-            #plt.show()
-            fig.savefig('C:/Users/projects/tiya/scienceFair-2020/reports/test_data/' + str(number) + '.png', dpi=fig.dpi)
-            number = number +1
-
-        images = np.array(images)
-        print(images.shape)
-        y_values = np.array(y_values)
-        print(box)
-        print(len(box))
-
-        for i in y_values:
-            print(i)
