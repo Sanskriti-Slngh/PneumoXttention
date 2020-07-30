@@ -39,6 +39,7 @@ A Convolutional Neural Network compensating for Human Fallibility when Detecting
     use_heatmap = False
     params['use_heatmap'] = False
     params['generate_heatmap'] = True
+    params['model_dir'] = 'm13_model_dir'
 
 > ## Step 5
 > Run **"train.py"** (original file) to reproduce final results. The output will be the F1 score, AUROC, recall, and precision.
@@ -53,5 +54,6 @@ A Convolutional Neural Network compensating for Human Fallibility when Detecting
     use_heatmap = True
     params['use_heatmap'] = True
     params['generate_heatmap'] = False
+    params['model_dir'] = 'm13h_model_dir'
 
 ## For any questions or concerns with the code or procedure please email *sanskritisingh0914@gmail.com* with these questions
