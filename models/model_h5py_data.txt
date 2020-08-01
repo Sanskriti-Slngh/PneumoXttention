@@ -1,4 +1,2 @@
-To download the model m13h.h5py data you can go to 
-https://drive.google.com/file/d/13AqZS6Ge4C_9QqWR3hrDMdfnYoafE_Bm/view?usp=sharing
-To download the model m13.h5py data you can go to 
-https://drive.google.com/file/d/1WLrGENe_RX4ys2NlS6-0DtvIr6fGg7Z0/view?usp=sharing
+To download all the generated data for the models please email
+sanskritisingh0914@gmail.com and request the data.
