@@ -1,6 +1,8 @@
 # SF2020
 A Convolutional Neural Network compensating for Human Fallibility when Detecting Pneumonia through Attention
 
+To download and access all the pre-generated data, including the pre-trained model, and (x,y) sets from train, val, and test please email and request the data from sanskritisingh0914@gmail.com.
+
 > ## Step 1
 > Download the following file(s):
 > - https://www.kaggle.com/c/rsna-pneumonia-detection-challenge/data?select=stage_2_train_images
